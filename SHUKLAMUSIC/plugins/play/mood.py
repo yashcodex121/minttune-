@@ -157,9 +157,7 @@ async def mood_command(client, message: Message):
         pass
     await message.reply_text(
         "🎵 <b>𝑴𝒐𝒐𝒅 𝑺𝒆𝒍𝒆𝒄𝒕𝒐𝒓</b>\n\n"
-        "╔══════════════════════╗\n"
-        "║  𝑪𝒉𝒐𝒐𝒔𝒆 𝒚𝒐𝒖𝒓 𝒎𝒐𝒐𝒅   ║\n"
-        "╚══════════════════════╝\n\n"
+        "𝑪𝒉𝒐𝒐𝒔𝒆 𝒚𝒐𝒖𝒓 𝒎𝒐𝒐𝒅\n\n\n"
         "🎶 <i>𝑰 𝒘𝒊𝒍𝒍 𝒑𝒊𝒄𝒌 𝒕𝒉𝒆 𝒑𝒆𝒓𝒇𝒆𝒄𝒕 𝒔𝒐𝒏𝒈 𝒋𝒖𝒔𝒕 𝒇𝒐𝒓 𝒚𝒐𝒖!</i>",
         reply_markup=mood_buttons(),
     )
