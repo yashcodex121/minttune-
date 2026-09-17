@@ -17,63 +17,74 @@ def track_markup(_, videoid, user_id, channel, fplay, chat_id=None):
     ]
 
 
+# Segments kam + compact spacing => button row ab card/photo se chauda nahi hoga
+SLIDER_SEGMENTS = 8
+SLIDER_DOT = "⬤"   # bada, saaf dikhne wala dot (● se bada)
+SLIDER_LINE = "▬"  # thin "─" se thoda mota/dense, mobile par saaf dikhta hai
+
+
+def _build_bar(played, dur):
+    played_sec = time_to_seconds(played)
+    duration_sec = time_to_seconds(dur)
+    pct = (played_sec / max(duration_sec, 1)) * 100
+    pos = round((min(100, max(0, pct)) / 100) * SLIDER_SEGMENTS)
+    left = SLIDER_LINE * pos
+    right = SLIDER_LINE * (SLIDER_SEGMENTS - pos)
+    bar = f"{left}{SLIDER_DOT}{right}"
+    cm, cs = divmod(played_sec, 60)
+    tm, ts = divmod(duration_sec, 60)
+    ct = f"{int(cm):01d}:{int(cs):02d}"
+    tt = f"{int(tm):01d}:{int(ts):02d}"
+    return f"{ct} {bar} {tt}"  # single spaces => compact, bubble se bahar nahi jayega
+
+
 def stream_markup_timer(_, chat_id, played, dur):
     """
-    Exact screenshot layout:
-    Row 1:  04:48 ──────●──── 5:13     ← slider progress bar
+    Row 1:  04:48 ▬▬▬⬤▬▬▬ 5:13   ← slider progress bar (flat, no gloss)
     Row 2:  [ ⏸ ]  [ ADD ME ↗ ]  [ | ▶▶ ]
     Row 3:  [ 🔄 ]
     """
-    played_sec   = time_to_seconds(played)
-    duration_sec = time_to_seconds(dur)
-    pct    = (played_sec / max(duration_sec, 1)) * 100
-    # Slider: 10 segments, circle (●) at current position
-    pos    = round((min(100, max(0, pct)) / 100) * 10)
-    left   = "─" * pos
-    right  = "─" * (10 - pos)
-    bar    = f"{left}●{right}"
-    cm, cs = divmod(played_sec, 60)
-    tm, ts = divmod(duration_sec, 60)
-    ct = f"{int(cm):02d}:{int(cs):02d}"
-    tt = f"{int(tm):02d}:{int(ts):02d}"
     bot_username = getattr(config, "BOT_USERNAME", "").lstrip("@")
 
     return [
         # ── Slider progress bar ───────────────────────────────────────────
         [
             InlineKeyboardButton(
-                text=f"{ct}  {bar}  {tt}",
+                text=_build_bar(played, dur),
                 callback_data="GetTimer",
-                style=ButtonStyle.PRIMARY,
             ),
         ],
         # ── Main controls: Pause | ADD ME | Skip ──────────────────────────
         [
-            InlineKeyboardButton(text="⏸", callback_data=f"ADMIN Pause|{chat_id}", style=ButtonStyle.PRIMARY),
-            InlineKeyboardButton(text="ADD ME ↗", url=f"https://t.me/{bot_username}?startgroup=true", style=ButtonStyle.SUCCESS),
-            InlineKeyboardButton(text="| ▶▶", callback_data=f"ADMIN Skip|{chat_id}", style=ButtonStyle.PRIMARY),
+            InlineKeyboardButton(text="⏸", callback_data=f"ADMIN Pause|{chat_id}"),
+            InlineKeyboardButton(text="ADD ME ↗", url=f"https://t.me/{bot_username}?startgroup=true"),
+            InlineKeyboardButton(text="▶▶", callback_data=f"ADMIN Skip|{chat_id}"),
         ],
         # ── Autoplay ──────────────────────────────────────────────────────
         [
-            InlineKeyboardButton(text="🔄", callback_data=f"ADMIN Autoplay|{chat_id}", style=ButtonStyle.SUCCESS),
+            InlineKeyboardButton(text="🔄", callback_data=f"ADMIN Autoplay|{chat_id}"),
         ],
     ]
 
 
-def stream_markup(_, chat_id):
-    """Static panel before timer kicks in — same layout without progress bar."""
+def stream_markup(_, chat_id, dur=None):
+    """Static panel before timer kicks in — same layout, bar at 0:00."""
     bot_username = getattr(config, "BOT_USERNAME", "").lstrip("@")
 
     return [
-        # ── Main controls ─────────────────────────────────────────────────
         [
-            InlineKeyboardButton(text="⏸", callback_data=f"ADMIN Pause|{chat_id}", style=ButtonStyle.PRIMARY),
-            InlineKeyboardButton(text="ADD ME ↗", url=f"https://t.me/{bot_username}?startgroup=true", style=ButtonStyle.SUCCESS),
-            InlineKeyboardButton(text="| ▶▶", callback_data=f"ADMIN Skip|{chat_id}", style=ButtonStyle.PRIMARY),
+            InlineKeyboardButton(
+                text=_build_bar("0:00", dur or "0:00"),
+                callback_data="GetTimer",
+            ),
         ],
-        # ── Autoplay ──────────────────────────────────────────────────────
         [
-            InlineKeyboardButton(text="🔄", callback_data=f"ADMIN Autoplay|{chat_id}", style=ButtonStyle.SUCCESS),
+            InlineKeyboardButton(text="⏸", callback_data=f"ADMIN Pause|{chat_id}"),
+            InlineKeyboardButton(text="ADD ME ↗", url=f"https://t.me/{bot_username}?startgroup=true"),
+            InlineKeyboardButton(text="▶▶", callback_data=f"ADMIN Skip|{chat_id}"),
+        ],
+        [
+            InlineKeyboardButton(text="🔄", callback_data=f"ADMIN Autoplay|{chat_id}"),
         ],
     ]
 
