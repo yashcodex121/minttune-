@@ -113,7 +113,6 @@ async def banner_command(client, message: Message):
             caption=caption,
             reply_markup=markup,
             parse_mode=ParseMode.HTML,
-            quote=False,
         )
         try:
             await message.delete()
@@ -129,7 +128,6 @@ async def banner_command(client, message: Message):
             reply_markup=markup,
             parse_mode=ParseMode.HTML,
             disable_web_page_preview=True,
-            quote=False,
         )
         try:
             await message.delete()
