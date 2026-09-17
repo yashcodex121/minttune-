@@ -17,10 +17,10 @@ def track_markup(_, videoid, user_id, channel, fplay, chat_id=None):
     ]
 
 
-# Segments kam + tight spacing => button row card/photo se chauda nahi hoga
-SLIDER_SEGMENTS = 6
-SLIDER_DOT = "⬤"   # bada, saaf dikhne wala dot (● se bada)
-SLIDER_LINE = "▬"  # thin "─" se thoda mota/dense, mobile par saaf dikhta hai
+# Segments aur kam + tight spacing => button row kabhi bhi card se chauda nahi hoga
+SLIDER_SEGMENTS = 5
+SLIDER_DOT = "🔘"   # emoji knob — text circle se kaafi bada aur sabhi devices pe consistent dikhta hai
+SLIDER_LINE = "▬"
 
 
 def _build_bar(played, dur):
