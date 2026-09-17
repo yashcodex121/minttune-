@@ -14,7 +14,7 @@
 import asyncio
 from pyrogram import filters
 from pyrogram.types import CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup
-from SHUKLAMUSIC import YouTube, app
+from SHUKLAMUSIC import LOGGER, YouTube, app
 from SHUKLAMUSIC.core.call import SHUKLA, queue_autoplay_song
 from SHUKLAMUSIC.misc import SUDOERS, db
 from SHUKLAMUSIC.utils.database import (
@@ -438,50 +438,68 @@ async def del_back_playlist(client, CallbackQuery, _):
 
 async def markup_timer():
     while not await asyncio.sleep(7):
-        active_chats = await get_active_chats()
+        try:
+            active_chats = await get_active_chats()
+        except Exception as e:
+            LOGGER(__name__).error(f"[markup_timer] get_active_chats failed: {e}")
+            continue
+
         for chat_id in active_chats:
             try:
                 if not await is_music_playing(chat_id):
                     continue
+
                 playing = db.get(chat_id)
                 if not playing:
                     continue
-                duration_seconds = int(playing[0]["seconds"])
+
+                # Only touch the bar on messages that were actually sent
+                # with the slider layout (stream_markup / stream_markup_timer).
+                # Editing any other markup type (e.g. "tg") silently fails
+                # or clobbers buttons that don't match the callback_data.
+                if playing[0].get("markup") != "stream":
+                    continue
+
+                duration_seconds = int(playing[0].get("seconds", 0))
                 if duration_seconds == 0:
                     continue
-                try:
-                    mystic = playing[0]["mystic"]
-                except:
+
+                mystic = playing[0].get("mystic")
+                if not mystic:
                     continue
+
                 try:
                     check = checker[chat_id][mystic.id]
                     if check is False:
                         continue
-                except:
+                except Exception:
                     pass
+
                 # ── Increment played time by 7 seconds ────────────────────
                 played = int(playing[0].get("played", 0))
                 played = min(played + 7, duration_seconds)
                 db[chat_id][0]["played"] = played
                 # ─────────────────────────────────────────────────────────
+
                 try:
                     language = await get_lang(chat_id)
                     _ = get_string(language)
-                except:
+                except Exception:
                     _ = get_string("en")
-                try:
-                    buttons = stream_markup_timer(
-                        _,
-                        chat_id,
-                        seconds_to_min(played),
-                        playing[0]["dur"],
-                    )
-                    await mystic.edit_reply_markup(
-                        reply_markup=InlineKeyboardMarkup(buttons)
-                    )
-                except:
-                    continue
-            except:
+
+                buttons = stream_markup_timer(
+                    _,
+                    chat_id,
+                    seconds_to_min(played),
+                    playing[0]["dur"],
+                )
+                await mystic.edit_reply_markup(
+                    reply_markup=InlineKeyboardMarkup(buttons)
+                )
+            except Exception as e:
+                # Log instead of silently swallowing — this is the only way
+                # to see WHY the slider isn't updating for a given chat.
+                LOGGER(__name__).warning(f"[markup_timer] chat {chat_id} failed: {e}")
                 continue
 
 
