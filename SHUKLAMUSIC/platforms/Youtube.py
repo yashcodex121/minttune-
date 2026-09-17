@@ -298,38 +298,94 @@ class YouTubeAPI:
         return title, duration_min, thumbnail, vidid
 
     async def related(self, videoid: str, exclude_ids: Union[list, set, None] = None):
-        """'Up next' style recommendation, sourced purely from search
-        (py_yt / VideosSearch) — no yt_dlp mix-playlist scraping anymore."""
+        """Spotify-style 'Up Next' recommendation.
+
+        Strategy (multi-step so we almost never return the same song):
+        1. Fetch the seed song's title + channel from py_yt.
+        2. Strip the artist/channel name from the title so we get
+           *different* songs by the same artist, not the exact same track.
+        3. Try several search queries in order until we find a fresh track
+           that isn't in exclude_ids:
+              a) "{artist} songs" — other songs by the same artist
+              b) "{clean_title} mix" — similar tracks  
+              c) "{clean_title} similar songs"
+              d) "{artist} top hits"
+              e) Plain title search as final fallback
+        4. Skip the seed video id and anything already in history.
+        """
         exclude_ids = set(exclude_ids or [])
         exclude_ids.add(videoid)
 
+        # ── Step 1: get seed title + channel ──────────────────────────────
+        seed_title = ""
+        artist = ""
         try:
             seed = VideosSearch(self.base + videoid, limit=1)
-            seed_result = (await seed.next())["result"]
-            if not seed_result:
-                return None
-            title = seed_result[0]["title"]
+            seed_result = (await seed.next()).get("result", [])
+            if seed_result:
+                seed_title = seed_result[0].get("title", "")
+                # channel is usually "channel" key inside result
+                channel_obj = seed_result[0].get("channel", {})
+                artist = channel_obj.get("name", "") if isinstance(channel_obj, dict) else ""
         except Exception:
+            pass
+
+        if not seed_title:
             return None
 
-        try:
-            search = VideosSearch(title, limit=10)
-            candidates = (await search.next())["result"]
-        except Exception:
-            return None
+        # ── Step 2: clean title (remove "official", "lyrics", "ft." etc.) ─
+        import re as _re
+        clean_title = _re.sub(
+            r'\b(official|lyrics?|video|audio|ft\.?|feat\.?|full|hd|4k|music)\b',
+            '', seed_title, flags=_re.IGNORECASE
+        ).strip(" -|[]()").strip()
+        if not clean_title:
+            clean_title = seed_title
 
-        for item in candidates:
-            vid = item.get("id")
-            duration_min = item.get("duration")
-            if not vid or not duration_min or vid in exclude_ids:
+        # ── Step 3: build search queries ──────────────────────────────────
+        queries = []
+        if artist:
+            queries.append(f"{artist} best songs")
+            queries.append(f"{artist} songs playlist")
+        queries.append(f"{clean_title} mix")
+        queries.append(f"{clean_title} similar songs")
+        if artist:
+            queries.append(f"{artist} top hits")
+        queries.append(clean_title)      # plain fallback
+        queries.append(seed_title)       # original fallback
+
+        # ── Step 4: search each query, return first non-duplicate hit ─────
+        for query in queries:
+            try:
+                search = VideosSearch(query, limit=15)
+                candidates = (await search.next()).get("result", [])
+            except Exception:
                 continue
-            return {
-                "title": item["title"],
-                "vidid": vid,
-                "duration_min": duration_min,
-                "thumb": item["thumbnails"][0]["url"].split("?")[0],
-                "link": item["link"],
-            }
+
+            for item in candidates:
+                vid = item.get("id")
+                duration_min = item.get("duration")
+                if not vid or not duration_min:
+                    continue
+                if vid in exclude_ids:
+                    continue
+                # Skip very short clips (< 1 min) or very long (> 20 min)
+                try:
+                    dur_sec = time_to_seconds(duration_min)
+                    if dur_sec < 60 or dur_sec > 1200:
+                        continue
+                except Exception:
+                    pass
+                thumbs = item.get("thumbnails", [])
+                thumb = thumbs[0]["url"].split("?")[0] if thumbs else ""
+                return {
+                    "title": item["title"],
+                    "vidid": vid,
+                    "duration_min": duration_min,
+                    "thumb": thumb,
+                    "link": item.get("link", self.base + vid),
+                }
+
         return None
 
     async def download(

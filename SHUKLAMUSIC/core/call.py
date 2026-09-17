@@ -60,40 +60,94 @@ AUDIO_MODE_FILTERS = {"eco": ECO_FILTER, "lofi": LOFI_FILTER}
 
 
 async def queue_autoplay_song(chat_id: int, popped: dict) -> bool:
-    """If autoplay is ON for this chat, fetch a related song and push it
-    into the queue so playback continues. Returns True if a song was queued."""
+    """Spotify-style autoplay — fetches a DIFFERENT related song every time.
+
+    Improvements over original:
+    - Keeps per-chat history of last 30 songs to avoid ANY repeat.
+    - Tries up to 3 related-song fetches before giving up (in case first
+      candidate download fails).
+    - Sends a styled now-playing message so the user knows autoplay fired.
+    """
     if not popped:
         return False
     try:
         if not await get_autoplay(chat_id):
             return False
         vidid = popped.get("vidid")
-        if not vidid:
+        if not vidid or vidid in ("telegram", "soundcloud"):
             return False
+
         history = autoplay_history.setdefault(chat_id, [])
-        related = await YouTube.related(vidid, exclude_ids=history)
-        if not related:
-            return False
-        file_path, direct = await YouTube.download(
-            related["vidid"], None, videoid=True
-        )
-        if not file_path:
-            return False
-        await put_queue(
-            chat_id,
-            popped.get("chat_id", chat_id),
-            file_path if direct else f"vid_{related['vidid']}",
-            related["title"],
-            related["duration_min"],
-            "🔁 Autoplay",
-            related["vidid"],
-            popped.get("user_id", 0) or 0,
-            "audio",
-        )
-        history.append(related["vidid"])
-        if len(history) > 20:
-            del history[: len(history) - 20]
-        return True
+
+        # ── Try up to 3 candidates ────────────────────────────────────────
+        for attempt in range(3):
+            related = await YouTube.related(vidid, exclude_ids=set(history))
+            if not related:
+                break
+
+            r_vidid = related["vidid"]
+            if r_vidid in history:
+                # already played — add a fake entry so next search skips it
+                history.append(r_vidid)
+                continue
+
+            # Try downloading
+            file_path, direct = await YouTube.download(
+                r_vidid, None, videoid=True
+            )
+            if not file_path:
+                # Mark as tried so we don't retry this vid
+                history.append(r_vidid)
+                continue
+
+            # ── Queue the song ────────────────────────────────────────────
+            original_chat_id = popped.get("chat_id", chat_id)
+            await put_queue(
+                chat_id,
+                original_chat_id,
+                file_path if direct else f"vid_{r_vidid}",
+                related["title"],
+                related["duration_min"],
+                "🔄 𝑨𝒖𝒕𝒐𝒑𝒍𝒂𝒚",
+                r_vidid,
+                popped.get("user_id", 0) or 0,
+                "audio",
+            )
+
+            # ── Track history (keep last 30) ──────────────────────────────
+            history.append(r_vidid)
+            if len(history) > 30:
+                del history[: len(history) - 30]
+            autoplay_history[chat_id] = history
+
+            # ── Notify chat ───────────────────────────────────────────────
+            try:
+                from SHUKLAMUSIC import app
+                from SHUKLAMUSIC.utils.inline.play import stream_markup
+                from pyrogram.types import InlineKeyboardMarkup
+                language = await get_lang(chat_id)
+                lang_str = get_string(language)
+                button = stream_markup(lang_str, chat_id)
+                run = await app.send_message(
+                    chat_id=original_chat_id,
+                    text=(
+                        "╔══════════════════════════╗\n"
+                        "║  🔄  <b>𝑨𝑼𝑻𝑶𝑷𝑳𝑨𝒀</b>  🔄  ║\n"
+                        "╚══════════════════════════╝\n\n"
+                        f"🎵 <b>𝑺𝒐𝒏𝒈 :</b> <code>{related['title'][:45]}</code>\n"
+                        f"⏱ <b>𝑫𝒖𝒓  :</b> <code>{related['duration_min']}</code>\n"
+                        f"🎧 <i>𝑷𝒍𝒂𝒚𝒊𝒏𝒈 𝒂𝒖𝒕𝒐𝒎𝒂𝒕𝒊𝒄𝒂𝒍𝒍𝒚 𝒍𝒊𝒌𝒆 𝑺𝒑𝒐𝒕𝒊𝒇𝒚 ✨</i>"
+                    ),
+                    reply_markup=InlineKeyboardMarkup(button),
+                )
+                db[chat_id][0]["mystic"] = run
+                db[chat_id][0]["markup"] = "stream"
+            except Exception:
+                pass
+
+            return True
+
+        return False
     except Exception:
         return False
 
