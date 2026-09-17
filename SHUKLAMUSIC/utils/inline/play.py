@@ -18,9 +18,9 @@ def track_markup(_, videoid, user_id, channel, fplay, chat_id=None):
 
 
 # Segments aur kam + tight spacing => button row kabhi bhi card se chauda nahi hoga
-SLIDER_SEGMENTS = 5
-SLIDER_DOT = "🔘"   # emoji knob — text circle se kaafi bada aur sabhi devices pe consistent dikhta hai
-SLIDER_LINE = "▬"
+SLIDER_SEGMENTS = 4
+SLIDER_DOT = "⦿⃝"   # emoji knob — text circle se kaafi bada aur sabhi devices pe consistent dikhta hai
+SLIDER_LINE = "━"
 
 
 def _build_bar(played, dur):
@@ -41,8 +41,8 @@ def _build_bar(played, dur):
 def stream_markup_timer(_, chat_id, played, dur):
     """
     Row 1:  4:48▬▬⬤▬▬5:13   ← slider progress bar
-    Row 2:  [ ⏸ blue ]  [ ADD ME ↗ green ]  [ ▶▶ red ]
-    Row 3:  [ 🔄 green ]
+    Row 2:  [  ▮▮ blue ]  [ ADD ME  green ]  [ ▶▶ red ]
+    Row 3:  [ 🔁 green ]
     """
     bot_username = getattr(config, "BOT_USERNAME", "").lstrip("@")
 
@@ -56,13 +56,14 @@ def stream_markup_timer(_, chat_id, played, dur):
         ],
         # ── Main controls: Pause | ADD ME | Skip ──────────────────────────
         [
-            InlineKeyboardButton(text="⏸", callback_data=f"ADMIN Pause|{chat_id}", style=ButtonStyle.PRIMARY),
-            InlineKeyboardButton(text="ADD ME ↗", url=f"https://t.me/{bot_username}?startgroup=true", style=ButtonStyle.SUCCESS),
-            InlineKeyboardButton(text="⏭", callback_data=f"ADMIN Skip|{chat_id}", style=ButtonStyle.DANGER),
+            InlineKeyboardButton(text="▮▮", callback_data=f"ADMIN Pause|{chat_id}", style=ButtonStyle.PRIMARY),
+            InlineKeyboardButton(text="𝗔𝗗𝗗 𝗠𝗘", url=f"https://t.me/{bot_username}?startgroup=true", style=ButtonStyle.SUCCESS),
+            InlineKeyboardButton(text="▶▶
+", callback_data=f"ADMIN Skip|{chat_id}", style=ButtonStyle.DANGER),
         ],
         # ── Autoplay ──────────────────────────────────────────────────────
         [
-            InlineKeyboardButton(text="🔄", callback_data=f"ADMIN Autoplay|{chat_id}", style=ButtonStyle.SUCCESS),
+            InlineKeyboardButton(text="  ⟳", callback_data=f"ADMIN Autoplay|{chat_id}", style=ButtonStyle.SUCCESS),
         ],
     ]
 
