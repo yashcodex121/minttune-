@@ -136,7 +136,7 @@ async def queue_autoplay_song(chat_id: int, popped: dict) -> bool:
                         "╚══════════════════════════╝\n\n"
                         f"🎵 <b>𝑺𝒐𝒏𝒈 :</b> <code>{related['title'][:45]}</code>\n"
                         f"⏱ <b>𝑫𝒖𝒓  :</b> <code>{related['duration_min']}</code>\n"
-                        f"🎧 <i>𝑷𝒍𝒂𝒚𝒊𝒏𝒈 𝒂𝒖𝒕𝒐𝒎𝒂𝒕𝒊𝒄𝒂𝒍𝒍𝒚 𝒍𝒊𝒌𝒆 𝑺𝒑𝒐𝒕𝒊𝒇𝒚 ✨</i>"
+                        f"🎶 <i>𝑵𝒆𝒙𝒕 𝒔𝒐𝒏𝒈 𝒊𝒔 𝒓𝒆𝒂𝒅𝒚 ✨</i>"
                     ),
                     reply_markup=InlineKeyboardMarkup(button),
                 )
