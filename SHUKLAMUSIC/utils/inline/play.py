@@ -58,7 +58,7 @@ def stream_markup_timer(_, chat_id, played, dur):
         [
             InlineKeyboardButton(text="⏸", callback_data=f"ADMIN Pause|{chat_id}", style=ButtonStyle.PRIMARY),
             InlineKeyboardButton(text="ADD ME ↗", url=f"https://t.me/{bot_username}?startgroup=true", style=ButtonStyle.SUCCESS),
-            InlineKeyboardButton(text="▶▶", callback_data=f"ADMIN Skip|{chat_id}", style=ButtonStyle.DANGER),
+            InlineKeyboardButton(text="⏭", callback_data=f"ADMIN Skip|{chat_id}", style=ButtonStyle.DANGER),
         ],
         # ── Autoplay ──────────────────────────────────────────────────────
         [
@@ -81,7 +81,7 @@ def stream_markup(_, chat_id, dur=None):
         [
             InlineKeyboardButton(text="⏸", callback_data=f"ADMIN Pause|{chat_id}", style=ButtonStyle.PRIMARY),
             InlineKeyboardButton(text="ADD ME ↗", url=f"https://t.me/{bot_username}?startgroup=true", style=ButtonStyle.SUCCESS),
-            InlineKeyboardButton(text="▶▶", callback_data=f"ADMIN Skip|{chat_id}", style=ButtonStyle.DANGER),
+            InlineKeyboardButton(text="⏭", callback_data=f"ADMIN Skip|{chat_id}", style=ButtonStyle.DANGER),
         ],
         [
             InlineKeyboardButton(text="🔄", callback_data=f"ADMIN Autoplay|{chat_id}", style=ButtonStyle.SUCCESS),
