@@ -6,8 +6,8 @@ from SHUKLAMUSIC.utils.formatters import time_to_seconds
 
 
 def track_markup(_, videoid, user_id, channel, fplay, chat_id=None):
-    """Shown when a URL/search result is found — Audio/Video pick + Autoplay toggle + Close."""
-    rows = [
+    """Audio/Video pick card + Close."""
+    return [
         [
             InlineKeyboardButton(
                 text="🎵 𝑨𝒖𝒅𝒊𝒐",
@@ -28,11 +28,17 @@ def track_markup(_, videoid, user_id, channel, fplay, chat_id=None):
             ),
         ],
     ]
-    return rows
 
 
 def stream_markup_timer(_, chat_id, played, dur):
-    """Animated progress-bar markup shown on the now-playing message."""
+    """
+    Animated now-playing panel — screenshot style:
+
+    Row 1:  [played_time ─────●───── total_time]   (progress slider feel)
+    Row 2:  [⏸ Pause]  [🔄 Autoplay]  [⏭ Skip ▶▶]
+    Row 3:  [🔁 Replay]  [🔀 Shuffle]  [🔂 Loop]
+    Row 4:  [⏹ Stop / End]
+    """
     played_sec   = time_to_seconds(played)
     duration_sec = time_to_seconds(dur)
     pct    = (played_sec / max(duration_sec, 1)) * 100
@@ -44,83 +50,129 @@ def stream_markup_timer(_, chat_id, played, dur):
     tt = f"{int(tm):02d}:{int(ts):02d}"
 
     return [
-        # ── Progress bar ──────────────────────────────────────────────────
+        # ── Progress bar (slider style) ───────────────────────────────────
         [
             InlineKeyboardButton(
-                text=f"⏱ {ct} {bar} {tt}",
+                text=f"{ct}  {bar}  {tt}",
                 callback_data="GetTimer",
                 style=ButtonStyle.PRIMARY,
             )
         ],
-        # ── Playback controls ─────────────────────────────────────────────
-        [
-            InlineKeyboardButton(text="▶️",  callback_data=f"ADMIN Resume|{chat_id}", style=ButtonStyle.SUCCESS),
-            InlineKeyboardButton(text="⏭",   callback_data=f"ADMIN Skip|{chat_id}",   style=ButtonStyle.PRIMARY),
-            InlineKeyboardButton(text="⏸",   callback_data=f"ADMIN Pause|{chat_id}",  style=ButtonStyle.PRIMARY),
-            InlineKeyboardButton(text="⏹",   callback_data=f"ADMIN Stop|{chat_id}",   style=ButtonStyle.DANGER),
-        ],
-        # ── Queue controls ────────────────────────────────────────────────
-        [
-            InlineKeyboardButton(text="🔁 𝑹𝒆𝒑𝒍𝒂𝒚",   callback_data=f"ADMIN Replay|{chat_id}",   style=ButtonStyle.PRIMARY),
-            InlineKeyboardButton(text="🔀 𝑺𝒉𝒖𝒇𝒇𝒍𝒆", callback_data=f"ADMIN Shuffle|{chat_id}", style=ButtonStyle.PRIMARY),
-            InlineKeyboardButton(text="🔂 𝑳𝒐𝒐𝒑",     callback_data=f"ADMIN Loop|{chat_id}",     style=ButtonStyle.PRIMARY),
-        ],
-        # ── Autoplay (Spotify-style) ──────────────────────────────────────
+        # ── Main controls: Pause | Autoplay | Skip ────────────────────────
         [
             InlineKeyboardButton(
-                text="🔄 𝑨𝒖𝒕𝒐𝒑𝒍𝒂𝒚",
+                text="⏸",
+                callback_data=f"ADMIN Pause|{chat_id}",
+                style=ButtonStyle.PRIMARY,
+            ),
+            InlineKeyboardButton(
+                text="🔄 𝑨𝒖𝒕𝒐",
                 callback_data=f"ADMIN Autoplay|{chat_id}",
                 style=ButtonStyle.SUCCESS,
-            )
+            ),
+            InlineKeyboardButton(
+                text="⏭ ▶▶",
+                callback_data=f"ADMIN Skip|{chat_id}",
+                style=ButtonStyle.PRIMARY,
+            ),
         ],
-        # ── Close ─────────────────────────────────────────────────────────
+        # ── Secondary controls: Resume | Replay | Shuffle | Loop ──────────
         [
             InlineKeyboardButton(
-                text="✖️ 𝑪𝒍𝒐𝒔𝒆",
-                callback_data="close",
+                text="▶️",
+                callback_data=f"ADMIN Resume|{chat_id}",
+                style=ButtonStyle.SUCCESS,
+            ),
+            InlineKeyboardButton(
+                text="🔁",
+                callback_data=f"ADMIN Replay|{chat_id}",
+                style=ButtonStyle.PRIMARY,
+            ),
+            InlineKeyboardButton(
+                text="🔀",
+                callback_data=f"ADMIN Shuffle|{chat_id}",
+                style=ButtonStyle.PRIMARY,
+            ),
+            InlineKeyboardButton(
+                text="🔂",
+                callback_data=f"ADMIN Loop|{chat_id}",
+                style=ButtonStyle.PRIMARY,
+            ),
+        ],
+        # ── Stop ──────────────────────────────────────────────────────────
+        [
+            InlineKeyboardButton(
+                text="⏹ 𝑺𝒕𝒐𝒑 / 𝑬𝒏𝒅",
+                callback_data=f"ADMIN Stop|{chat_id}",
                 style=ButtonStyle.DANGER,
-            )
+            ),
         ],
     ]
 
 
 def stream_markup(_, chat_id):
-    """Static now-playing markup (before the timer task kicks in)."""
+    """
+    Static now-playing panel (before timer task kicks in) — same layout:
+
+    Row 1:  [⏸ Pause]  [🔄 Autoplay]  [⏭ Skip ▶▶]
+    Row 2:  [▶️ Resume]  [🔁 Replay]  [🔀 Shuffle]  [🔂 Loop]
+    Row 3:  [⏹ Stop / End]
+    """
     return [
-        # ── Playback controls ─────────────────────────────────────────────
-        [
-            InlineKeyboardButton(text="▶️",  callback_data=f"ADMIN Resume|{chat_id}", style=ButtonStyle.SUCCESS),
-            InlineKeyboardButton(text="⏭",   callback_data=f"ADMIN Skip|{chat_id}",   style=ButtonStyle.PRIMARY),
-            InlineKeyboardButton(text="⏸",   callback_data=f"ADMIN Pause|{chat_id}",  style=ButtonStyle.PRIMARY),
-            InlineKeyboardButton(text="⏹",   callback_data=f"ADMIN Stop|{chat_id}",   style=ButtonStyle.DANGER),
-        ],
-        # ── Queue controls ────────────────────────────────────────────────
-        [
-            InlineKeyboardButton(text="🔁 𝑹𝒆𝒑𝒍𝒂𝒚",   callback_data=f"ADMIN Replay|{chat_id}",   style=ButtonStyle.PRIMARY),
-            InlineKeyboardButton(text="🔀 𝑺𝒉𝒖𝒇𝒇𝒍𝒆", callback_data=f"ADMIN Shuffle|{chat_id}", style=ButtonStyle.PRIMARY),
-            InlineKeyboardButton(text="🔂 𝑳𝒐𝒐𝒑",     callback_data=f"ADMIN Loop|{chat_id}",     style=ButtonStyle.PRIMARY),
-        ],
-        # ── Autoplay (Spotify-style) ──────────────────────────────────────
+        # ── Main controls ─────────────────────────────────────────────────
         [
             InlineKeyboardButton(
-                text="🔄 𝑨𝒖𝒕𝒐𝒑𝒍𝒂𝒚",
+                text="⏸",
+                callback_data=f"ADMIN Pause|{chat_id}",
+                style=ButtonStyle.PRIMARY,
+            ),
+            InlineKeyboardButton(
+                text="🔄 𝑨𝒖𝒕𝒐",
                 callback_data=f"ADMIN Autoplay|{chat_id}",
                 style=ButtonStyle.SUCCESS,
-            )
+            ),
+            InlineKeyboardButton(
+                text="⏭ ▶▶",
+                callback_data=f"ADMIN Skip|{chat_id}",
+                style=ButtonStyle.PRIMARY,
+            ),
         ],
-        # ── Close ─────────────────────────────────────────────────────────
+        # ── Secondary controls ────────────────────────────────────────────
         [
             InlineKeyboardButton(
-                text="✖️ 𝑪𝒍𝒐𝒔𝒆",
-                callback_data="close",
+                text="▶️",
+                callback_data=f"ADMIN Resume|{chat_id}",
+                style=ButtonStyle.SUCCESS,
+            ),
+            InlineKeyboardButton(
+                text="🔁",
+                callback_data=f"ADMIN Replay|{chat_id}",
+                style=ButtonStyle.PRIMARY,
+            ),
+            InlineKeyboardButton(
+                text="🔀",
+                callback_data=f"ADMIN Shuffle|{chat_id}",
+                style=ButtonStyle.PRIMARY,
+            ),
+            InlineKeyboardButton(
+                text="🔂",
+                callback_data=f"ADMIN Loop|{chat_id}",
+                style=ButtonStyle.PRIMARY,
+            ),
+        ],
+        # ── Stop ──────────────────────────────────────────────────────────
+        [
+            InlineKeyboardButton(
+                text="⏹ 𝑺𝒕𝒐𝒑 / 𝑬𝒏𝒅",
+                callback_data=f"ADMIN Stop|{chat_id}",
                 style=ButtonStyle.DANGER,
-            )
+            ),
         ],
     ]
 
 
 def playlist_markup(_, videoid, user_id, ptype, channel, fplay, chat_id=None):
-    """Playlist selection: Audio / Video / Close."""
+    """Playlist: Audio / Video / Close."""
     return [
         [
             InlineKeyboardButton(
@@ -145,7 +197,7 @@ def playlist_markup(_, videoid, user_id, ptype, channel, fplay, chat_id=None):
 
 
 def livestream_markup(_, videoid, user_id, mode, channel, fplay):
-    """Live stream card: Stream + Close."""
+    """Live stream card."""
     return [
         [
             InlineKeyboardButton(
@@ -165,7 +217,7 @@ def livestream_markup(_, videoid, user_id, mode, channel, fplay):
 
 
 def slider_markup(_, videoid, user_id, query, query_type, channel, fplay):
-    """Search result slider: Audio / Video / Prev / Close / Next."""
+    """Search result slider."""
     return [
         [
             InlineKeyboardButton(
