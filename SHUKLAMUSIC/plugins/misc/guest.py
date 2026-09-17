@@ -114,21 +114,32 @@ async def banner_command(client, message: Message):
     banner_text = make_banner_text(display_name, username)
     markup = make_banner_markup(bot_username)
 
+    # NOTE: message.delete() NAHI karte — delete ke baad reply nahi hoti
+    # Seedha chat mein send karte hain
     try:
-        await message.delete()
-    except Exception:
-        pass
-
-    try:
-        await message.reply_photo(
+        await client.send_photo(
+            chat_id=message.chat.id,
             photo=config.START_IMG_URL,
             caption=banner_text,
             reply_markup=markup,
         )
+        # Command message delete karo BAAD mein
+        try:
+            await message.delete()
+        except Exception:
+            pass
     except Exception:
         # Photo fail → text only
-        await message.reply_text(
-            banner_text,
-            reply_markup=markup,
-            disable_web_page_preview=True,
-        )
+        try:
+            await client.send_message(
+                chat_id=message.chat.id,
+                text=banner_text,
+                reply_markup=markup,
+                disable_web_page_preview=True,
+            )
+            try:
+                await message.delete()
+            except Exception:
+                pass
+        except Exception as e:
+            print(f"[BANNER ERROR] {type(e).__name__}: {e}")
