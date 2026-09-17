@@ -32,25 +32,27 @@ def track_markup(_, videoid, user_id, channel, fplay, chat_id=None):
 
 def stream_markup_timer(_, chat_id, played, dur):
     """
-    Animated now-playing panel — screenshot style:
+    Exact screenshot layout:
 
-    Row 1:  [played_time ─────●───── total_time]   (progress slider feel)
-    Row 2:  [⏸ Pause]  [🔄 Autoplay]  [⏭ Skip ▶▶]
-    Row 3:  [🔁 Replay]  [🔀 Shuffle]  [🔂 Loop]
-    Row 4:  [⏹ Stop / End]
+    Row 1:  [  04:48 ────────── 5:13  ]   ← progress bar / timer
+    Row 2:  [ ⏸ Pause ] [ ➕ ADD ME ] [ ⏭ ▶▶ ]
+    Row 3:  [ 🔄 Autoplay  ON/OFF ]
     """
     played_sec   = time_to_seconds(played)
     duration_sec = time_to_seconds(dur)
     pct    = (played_sec / max(duration_sec, 1)) * 100
     filled = round((min(100, max(0, math.floor(pct))) / 100) * 10)
-    bar    = "▰" * filled + "▱" * (10 - filled)
+    # Unicode block progress bar
+    bar    = "━" * filled + "─" * (10 - filled)
     cm, cs = divmod(played_sec, 60)
     tm, ts = divmod(duration_sec, 60)
     ct = f"{int(cm):02d}:{int(cs):02d}"
     tt = f"{int(tm):02d}:{int(ts):02d}"
 
+    bot_username = getattr(config, "BOT_USERNAME", "").lstrip("@")
+
     return [
-        # ── Progress bar (slider style) ───────────────────────────────────
+        # ── Progress bar row ──────────────────────────────────────────────
         [
             InlineKeyboardButton(
                 text=f"{ct}  {bar}  {tt}",
@@ -58,16 +60,16 @@ def stream_markup_timer(_, chat_id, played, dur):
                 style=ButtonStyle.PRIMARY,
             )
         ],
-        # ── Main controls: Pause | Autoplay | Skip ────────────────────────
+        # ── Main controls: Pause | ADD ME | Skip ──────────────────────────
         [
             InlineKeyboardButton(
-                text="⏸",
+                text="⏸ 𝑷𝒂𝒖𝒔𝒆",
                 callback_data=f"ADMIN Pause|{chat_id}",
                 style=ButtonStyle.PRIMARY,
             ),
             InlineKeyboardButton(
-                text="🔄 𝑨𝒖𝒕𝒐",
-                callback_data=f"ADMIN Autoplay|{chat_id}",
+                text="➕ 𝑨𝑫𝑫 𝑴𝑬 ↗",
+                url=f"https://t.me/{bot_username}?startgroup=true",
                 style=ButtonStyle.SUCCESS,
             ),
             InlineKeyboardButton(
@@ -76,35 +78,12 @@ def stream_markup_timer(_, chat_id, played, dur):
                 style=ButtonStyle.PRIMARY,
             ),
         ],
-        # ── Secondary controls: Resume | Replay | Shuffle | Loop ──────────
+        # ── Autoplay toggle ───────────────────────────────────────────────
         [
             InlineKeyboardButton(
-                text="▶️",
-                callback_data=f"ADMIN Resume|{chat_id}",
+                text="🔄 𝑨𝒖𝒕𝒐𝒑𝒍𝒂𝒚",
+                callback_data=f"ADMIN Autoplay|{chat_id}",
                 style=ButtonStyle.SUCCESS,
-            ),
-            InlineKeyboardButton(
-                text="🔁",
-                callback_data=f"ADMIN Replay|{chat_id}",
-                style=ButtonStyle.PRIMARY,
-            ),
-            InlineKeyboardButton(
-                text="🔀",
-                callback_data=f"ADMIN Shuffle|{chat_id}",
-                style=ButtonStyle.PRIMARY,
-            ),
-            InlineKeyboardButton(
-                text="🔂",
-                callback_data=f"ADMIN Loop|{chat_id}",
-                style=ButtonStyle.PRIMARY,
-            ),
-        ],
-        # ── Stop ──────────────────────────────────────────────────────────
-        [
-            InlineKeyboardButton(
-                text="⏹ 𝑺𝒕𝒐𝒑 / 𝑬𝒏𝒅",
-                callback_data=f"ADMIN Stop|{chat_id}",
-                style=ButtonStyle.DANGER,
             ),
         ],
     ]
@@ -112,23 +91,24 @@ def stream_markup_timer(_, chat_id, played, dur):
 
 def stream_markup(_, chat_id):
     """
-    Static now-playing panel (before timer task kicks in) — same layout:
+    Static now-playing panel (before timer task):
 
-    Row 1:  [⏸ Pause]  [🔄 Autoplay]  [⏭ Skip ▶▶]
-    Row 2:  [▶️ Resume]  [🔁 Replay]  [🔀 Shuffle]  [🔂 Loop]
-    Row 3:  [⏹ Stop / End]
+    Row 1:  [ ⏸ Pause ] [ ➕ ADD ME ] [ ⏭ ▶▶ ]
+    Row 2:  [ 🔄 Autoplay ]
     """
+    bot_username = getattr(config, "BOT_USERNAME", "").lstrip("@")
+
     return [
         # ── Main controls ─────────────────────────────────────────────────
         [
             InlineKeyboardButton(
-                text="⏸",
+                text="⏸ 𝑷𝒂𝒖𝒔𝒆",
                 callback_data=f"ADMIN Pause|{chat_id}",
                 style=ButtonStyle.PRIMARY,
             ),
             InlineKeyboardButton(
-                text="🔄 𝑨𝒖𝒕𝒐",
-                callback_data=f"ADMIN Autoplay|{chat_id}",
+                text="➕ 𝑨𝑫𝑫 𝑴𝑬 ↗",
+                url=f"https://t.me/{bot_username}?startgroup=true",
                 style=ButtonStyle.SUCCESS,
             ),
             InlineKeyboardButton(
@@ -137,35 +117,12 @@ def stream_markup(_, chat_id):
                 style=ButtonStyle.PRIMARY,
             ),
         ],
-        # ── Secondary controls ────────────────────────────────────────────
+        # ── Autoplay toggle ───────────────────────────────────────────────
         [
             InlineKeyboardButton(
-                text="▶️",
-                callback_data=f"ADMIN Resume|{chat_id}",
+                text="🔄 𝑨𝒖𝒕𝒐𝒑𝒍𝒂𝒚",
+                callback_data=f"ADMIN Autoplay|{chat_id}",
                 style=ButtonStyle.SUCCESS,
-            ),
-            InlineKeyboardButton(
-                text="🔁",
-                callback_data=f"ADMIN Replay|{chat_id}",
-                style=ButtonStyle.PRIMARY,
-            ),
-            InlineKeyboardButton(
-                text="🔀",
-                callback_data=f"ADMIN Shuffle|{chat_id}",
-                style=ButtonStyle.PRIMARY,
-            ),
-            InlineKeyboardButton(
-                text="🔂",
-                callback_data=f"ADMIN Loop|{chat_id}",
-                style=ButtonStyle.PRIMARY,
-            ),
-        ],
-        # ── Stop ──────────────────────────────────────────────────────────
-        [
-            InlineKeyboardButton(
-                text="⏹ 𝑺𝒕𝒐𝒑 / 𝑬𝒏𝒅",
-                callback_data=f"ADMIN Stop|{chat_id}",
-                style=ButtonStyle.DANGER,
             ),
         ],
     ]
