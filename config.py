@@ -107,7 +107,7 @@ SUPPORT_GROUP = getenv("SUPPORT_GROUP", SUPPORT_CHAT)
 # Image URLs
 SHASHANK_IMG = getenv("SHASHANK_IMG", "https://h.uguu.se/rbricwLU.jpg").split(",") if "," in getenv("SHASHANK_IMG", "https://h.uguu.se/QaXTztiw.jpg") else [getenv("SHASHANK_IMG", "https://h.uguu.se/AQYquknW.jpg")]
 
-START_IMG_URL = getenv("START_IMG_URL", "https://kommodo.ai/i/abSMVJDntAtVPehy95fj")
+START_IMG_URL = getenv("START_IMG_URL", "https://files.catbox.moe/743t6g.jfif")
 PING_IMG_URL = getenv("PING_IMG_URL", "https://kommodo.ai/i/4wUGH9UgwTbe8tI9hBJB")
 PLAYLIST_IMG_URL = "https://kommodo.ai/i/HYkaXLyjPjil0sewgtUE"
 STATS_IMG_URL = "https://kommodo.ai/i/xWFSHUDhv2kdjsblZrHL"
