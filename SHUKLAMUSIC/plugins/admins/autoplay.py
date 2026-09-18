@@ -52,23 +52,23 @@ def autoplay_markup(chat_id: int, state: bool) -> InlineKeyboardMarkup:
 def autoplay_text(state: bool, mention: str) -> str:
     if state:
         return (
-            "╔══════════════════════════╗\n"
-            "║  🎵  𝑨𝑼𝑻𝑶𝑷𝑳𝑨𝒀  𝑴𝑶𝑫𝑬  ║\n"
-            "╚══════════════════════════╝\n\n"
-            "🟢 <b>𝑺𝒕𝒂𝒕𝒖𝒔 :</b>  <code>ON ✅</code>\n\n"
-            "🎧 <i>𝑱𝒖𝒔𝒕 𝒍𝒊𝒌𝒆 𝑺𝒑𝒐𝒕𝒊𝒇𝒚 — 𝑰 𝒘𝒊𝒍𝒍 𝒂𝒖𝒕𝒐𝒎𝒂𝒕𝒊𝒄𝒂𝒍𝒍𝒚\n"
-            "𝒑𝒍𝒂𝒚 𝒓𝒆𝒍𝒂𝒕𝒆𝒅 𝒔𝒐𝒏𝒈𝒔 𝒘𝒉𝒆𝒏 𝒕𝒉𝒆 𝒒𝒖𝒆𝒖𝒆 𝒆𝒏𝒅𝒔!</i>\n\n"
-            f"👤 <b>𝑬𝒏𝒂𝒃𝒍𝒆𝒅 𝒃𝒚 :</b>  {mention}"
+            "◆━━━━━━━━━━━━━━━━━━━◆\n"
+            "     🎵 A U T O P L A Y\n"
+            "◆━━━━━━━━━━━━━━━━━━━◆\n\n"
+            "✨ <b>Status:</b> <code>Enabled ✅</code>\n\n"
+            "🎶 <i>Sit back — I'll auto-play related\n"
+            "tracks once the queue runs dry!</i>\n\n"
+            f"👤 <b>Turned on by:</b> {mention}"
         )
     else:
         return (
-            "╔══════════════════════════╗\n"
-            "║  🎵  𝑨𝑼𝑻𝑶𝑷𝑳𝑨𝒀  𝑴𝑶𝑫𝑬  ║\n"
-            "╚══════════════════════════╝\n\n"
-            "🔴 <b>𝑺𝒕𝒂𝒕𝒖𝒔 :</b>  <code>OFF ❌</code>\n\n"
-            "⏹ <i>𝑨𝒖𝒕𝒐𝒑𝒍𝒂𝒚 𝒊𝒔 𝒏𝒐𝒘 𝒅𝒊𝒔𝒂𝒃𝒍𝒆𝒅.\n"
-            "𝑩𝒐𝒕 𝒘𝒊𝒍𝒍 𝒍𝒆𝒂𝒗𝒆 𝒂𝒇𝒕𝒆𝒓 𝒒𝒖𝒆𝒖𝒆 𝒆𝒏𝒅𝒔.</i>\n\n"
-            f"👤 <b>𝑫𝒊𝒔𝒂𝒃𝒍𝒆𝒅 𝒃𝒚 :</b>  {mention}"
+            "◆━━━━━━━━━━━━━━━━━━━◆\n"
+            "     🎵 A U T O P L A Y\n"
+            "◆━━━━━━━━━━━━━━━━━━━◆\n\n"
+            "🚫 <b>Status:</b> <code>Disabled ❌</code>\n\n"
+            "🎧 <i>No more auto-play — I'll head out\n"
+            "once the queue is finished.</i>\n\n"
+            f"👤 <b>Turned off by:</b> {mention}"
         )
 
 
