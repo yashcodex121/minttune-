@@ -300,18 +300,10 @@ async def start_pm(client, message: Message, _):
     user_first = message.from_user.first_name
 
     caption = (
-        f"Hey <b>{user_first}</b>✍️,\n\n"
-        f"╔══════════════════════════╗\n"
-        f"║                                              ║\n"
-        f"║  This is ˋ<b>{bot_display_name}</b>˴ ♩\n"
-        f"║  <b>[ No Ads ] ♩</b>\n"
-        f"║                                              ║\n"
-        f"║  A music player bot with\n"
-        f"║  some awesome and useful\n"
-        f"║  features. Click on the\n"
-        f"║  help button for more info.\n"
-        f"║                                              ║\n"
-        f"╚══════════════════════════╝\n\n"
+        f"Hey <b><i>{user_first}</i></b>✍️,\n\n"
+        f"This is ˋ<b>{bot_display_name}</b>˴ ♩ [ <b>No Ads</b> ] ♩. "
+        f"A music player bot with some awesome and useful features. "
+        f"Click on the help button for more info.\n\n"
         f"<i>Use the buttons below to go inside or back.</i>"
     )
 
